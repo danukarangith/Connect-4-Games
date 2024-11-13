@@ -1,0 +1,12 @@
+lk\ijse\dep\service\MoveGenerator.class
+lk\ijse\dep\util\DEPAlert$1.class
+lk\ijse\dep\util\AlertService.class
+lk\ijse\dep\service\WinnerNotificationStrategy.class
+lk\ijse\dep\service\BoardUIHandler.class
+lk\ijse\dep\service\AIWinStrategy.class
+lk\ijse\dep\service\WinnerDetector.class
+lk\ijse\dep\service\TieStrategy.class
+lk\ijse\dep\service\MoveValidator.class
+lk\ijse\dep\service\BoardState.class
+lk\ijse\dep\service\WinnerDetection.class
+lk\ijse\dep\service\HumanWinStrategy.class

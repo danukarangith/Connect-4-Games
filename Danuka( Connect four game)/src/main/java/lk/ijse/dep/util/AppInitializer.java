@@ -1,4 +1,4 @@
-package lk.ijse.dep;
+package lk.ijse.dep.util;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -21,4 +21,5 @@ public class AppInitializer extends Application {
         primaryStage.show();
         primaryStage.centerOnScreen();
     }
+    
 }

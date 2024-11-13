@@ -4,7 +4,6 @@ import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -14,21 +13,29 @@ import javafx.stage.Stage;
 import lk.ijse.dep.util.DEPAlert;
 
 import java.io.IOException;
+import lk.ijse.dep.util.AlertService;
 
 public class CreatePlayerController {
+    
     public JFXTextField txtName;
     public JFXButton btnPlay;
     public CubicCurve curve;
-
+    
+    private final AlertService alertService;
+    
+    public CreatePlayerController(){
+        this.alertService = new DEPAlert(Alert.AlertType.ERROR, "Error", "EmptyName", "XD");
+    }
+    
     public void btnPlayOnAction(ActionEvent actionEvent) throws IOException {
         String name = txtName.getText();
         if (name.isBlank()){
-            new DEPAlert(Alert.AlertType.ERROR, "Error", "Empty Name", "Name can't be empty").show();
+            alertService.showAlert(Alert.AlertType.ERROR, "Error", "Empty Name", "Name can't be empty");
             txtName.requestFocus();
             txtName.selectAll();
             return;
         }else if (!name.matches("[A-Za-z ]+")){
-            new DEPAlert(Alert.AlertType.WARNING, "Error", "Invalid Name", "Please enter a valid name").show();
+            alertService.showAlert(Alert.AlertType.WARNING, "Error", "Invalid Name", "Please enter a valid name");
             txtName.requestFocus();
             txtName.selectAll();
             return;
