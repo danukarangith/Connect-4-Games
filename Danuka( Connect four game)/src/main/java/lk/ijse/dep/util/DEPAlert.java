@@ -5,7 +5,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-public class DEPAlert extends Alert {
+public class DEPAlert extends Alert implements AlertService{
 
     public DEPAlert(AlertType alertType, String title, String header, String message, ButtonType... buttonTypes) {
         super(alertType, message, buttonTypes);
@@ -32,4 +32,11 @@ public class DEPAlert extends Alert {
             setGraphic(imgView);
         }
     }
+    
+    @Override
+    public void showAlert(Alert.AlertType alertType, String title, String header, String message) {
+        DEPAlert alert = new DEPAlert(alertType, title, header, message);
+        alert.show();
+    }
+    
 }

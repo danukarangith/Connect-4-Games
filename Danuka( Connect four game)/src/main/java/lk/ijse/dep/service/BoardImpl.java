@@ -1,162 +1,122 @@
 package lk.ijse.dep.service;
 
-import lk.ijse.dep.controller.BoardController;
-
-import java.util.ArrayList;
 import java.util.List;
 
-public class BoardImpl implements Board {
-    private Piece[][] pieces;
-    private BoardUI boardUI;
+public class BoardImpl extends Board {
+
+    private final Piece[][] pieces;
+    private final BoardUI boardUI;
+    private final MoveValidator moveValidator;
+    private final WinnerDetector winnerDetector;
+    private final MoveGenerator moveGenerator;
     public Piece piece = Piece.BLUE;
     public int cols;
+    
     public BoardImpl(BoardUI boardUI) {
         this.boardUI = boardUI;
-        pieces = new Piece[NUM_OF_COLS][NUM_OF_ROWS];
+        this.pieces = new Piece[NUM_OF_COLS][NUM_OF_ROWS];
+        initializeBoard();
+        
+        this.moveValidator = new MoveValidator(this);
+        this.winnerDetector = new WinnerDetector(this);
+        this.moveGenerator = new MoveGenerator(this);
+    }
 
-
-        for (int i = 0;i < NUM_OF_COLS;i++) {
-            for (int j = 0;j < NUM_OF_ROWS;j++){
+    public BoardImpl(Piece[][] pieces, BoardUI boardUI) {
+        this.pieces = new Piece[NUM_OF_COLS][NUM_OF_ROWS];
+        for (int i = 0; i < NUM_OF_COLS; i++) {
+            System.arraycopy(pieces[i], 0, this.pieces[i], 0, NUM_OF_ROWS);
+        }
+        this.boardUI = boardUI;
+        this.moveValidator = new MoveValidator(this);
+        this.winnerDetector = new WinnerDetector(this);
+        this.moveGenerator = new MoveGenerator(this);
+    }
+    
+    private void initializeBoard() {
+        for (int i = 0; i < NUM_OF_COLS; i++) {
+            for (int j = 0; j < NUM_OF_ROWS; j++) {
                 pieces[i][j] = Piece.EMPTY;
             }
         }
     }
-
+    
+    public Piece[][] getPieces() {
+        Piece[][] copy = new Piece[NUM_OF_COLS][NUM_OF_ROWS];
+        for (int i = 0; i < NUM_OF_COLS; i++) {
+            System.arraycopy(pieces[i], 0, copy[i], 0, NUM_OF_ROWS);
+        }
+        return copy;
+    }
+    
     @Override
     public BoardUI getBoardUI() {
         return this.boardUI;
     }
-
+    
     @Override
     public int findNextAvailableSpot(int col) {
-
-        for (int i = 0;i < NUM_OF_ROWS;i++){
-            if ( pieces[col][i] == Piece.EMPTY ){
-                return i;
-            }
-        }
-
-        return -1;
+        return moveValidator.findNextAvailableSpot(col);
     }
-
+    
     @Override
     public boolean isLegalMove(int col) {
-
-        return this.findNextAvailableSpot(col) > -1;
+        return moveValidator.isLegalMove(col);
     }
-
+    
     @Override
     public boolean existLegalMoves() {
-
-        for (int i = 0; i < NUM_OF_COLS; i++) {
-            if (this.isLegalMove(i)) {
-                return true;
-            }
-        }
-        return false;
+        return moveValidator.existLegalMoves();
     }
-
+    
     @Override
     public void updateMove(int col, Piece move) {
-
-        this.cols=col;
-        this.piece=move;
-
-
-        pieces[col][findNextAvailableSpot(col)] = move;
+        this.cols = col;
+        this.piece = move;
+        
+        int row = moveValidator.findNextAvailableSpot(col);
+        if (row != -1) {
+            pieces[col][row] = move;
+        }
     }
-
+    
     @Override
     public void updateMove(int col, int row, Piece move) {
-
         pieces[col][row] = move;
     }
-
+    
     @Override
     public Winner findWinner() {
-
-
-        for (int col = 0; col < NUM_OF_COLS; col++) {
-            for (int row = 0; row < NUM_OF_ROWS; row++) {
-                Piece currentPiece = pieces[col][row];
-
-                if (currentPiece != Piece.EMPTY) {
-
-                    if (row + 3 < NUM_OF_ROWS &&
-                            currentPiece == pieces[col][row + 1] &&
-                            currentPiece == pieces[col][row + 2] &&
-                            currentPiece == pieces[col][row + 3]) {
-
-                        return new Winner(currentPiece, col, row, col, row + 3);
-                    }
-
-
-                    if (col + 3 < NUM_OF_COLS &&
-                            currentPiece == pieces[col + 1][row] &&
-                            currentPiece == pieces[col + 2][row] &&
-                            currentPiece == pieces[col + 3][row]) {
-                        return new Winner(currentPiece, col, row, col + 3, row);
-                    }
-                }
-            }
-        }
-
-        return new Winner(Piece.EMPTY);
+        return winnerDetector.findWinner();
     }
-
-
-
-    public BoardImpl(Piece[][] pieces, BoardUI boardUI){
-        this.pieces = new Piece[NUM_OF_COLS][NUM_OF_ROWS];
-
-        //copies existing 2D array to newly created array here
-        for (int i = 0;i < NUM_OF_COLS;i++){
-            for (int j = 0;j < NUM_OF_ROWS;j++){
-                this.pieces[i][j] = pieces[i][j];
-            }
-        }
-        this.boardUI = boardUI;
-    }
-
+    
     @Override
     public BoardImpl getBoardImpl() {
         return this;
     }
-
-
-    public List<BoardImpl> getAllLegalNextMoves() {
-        Piece nextPiece = piece == Piece.BLUE? Piece.GREEN : Piece.BLUE;
-
-        List<BoardImpl> nextMoves = new ArrayList<>();
-        for (int col = 0; col < NUM_OF_COLS; col++) {
-            if (findNextAvailableSpot(col) > -1) {
-                BoardImpl legalMove = new BoardImpl(this.pieces,this.boardUI);
-                legalMove.updateMove(col, nextPiece);
-                nextMoves.add(legalMove);
-            }
-        }
-        return nextMoves;
-    }
-
-    public BoardImpl getRandomLegalNextMove(){
-        final  List<BoardImpl> legalMoves = getAllLegalNextMoves();
-        if (legalMoves.isEmpty()) {
-            return null;
-        }
-        final int random;
-        random = RANDOM_GENERATOR.nextInt(legalMoves.size());
-        return legalMoves.get(random);
-    }
-
-    public boolean getStatus(){
+    
+    public boolean getStatus() {
         if (!existLegalMoves()) {
             return false;
         }
         Winner winner = findWinner();
-        if (winner.getWinningPiece() != Piece.EMPTY) {
-            return false;
-        }
-        return true;
+        return winner.getWinningPiece() == Piece.EMPTY;
     }
+    
+    public List<BoardImpl> getAllLegalNextMoves() {
+        return moveGenerator.getAllLegalNextMoves(this.piece);
+    }
+    
+    public BoardImpl getRandomLegalNextMove() {
+        return moveGenerator.getRandomLegalNextMove(this.piece);
+    }
+    
+    public Piece getPiece(int col, int row) {
+        return pieces[col][row];
+    }
+    
+    public void setPiece(int col, int row, Piece piece) {
+        pieces[col][row] = piece;
+    }
+    
 }
-
